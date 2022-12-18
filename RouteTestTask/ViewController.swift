@@ -45,6 +45,7 @@ class ViewController: UIViewController {
         addAdressButton.addTarget(self, action: #selector(addAdressButtonTapped), for: .touchUpInside)
         routeButton.addTarget(self, action: #selector(routeButtonTapped), for: .touchUpInside)
         resetButton.addTarget(self, action: #selector(resetButtonTapped), for: .touchUpInside)
+        mapView.delegate = self
     }
     
     @objc func addAdressButtonTapped() {
@@ -52,7 +53,6 @@ class ViewController: UIViewController {
             setupPlacemarkt(addressPlace: text)
             
         }
-        
     }
     @objc func routeButtonTapped() {
         print("TapRoute")
@@ -88,7 +88,41 @@ class ViewController: UIViewController {
             mapView.showAnnotations(annotationsArray, animated: true)
         }
     }
+    
+    private func createDirectionRequest(startCoordinate: CLLocationCoordinate2D, destinationCoordinate: CLLocationCoordinate2D) {
+        let startLocation = MKPlacemark(coordinate: startCoordinate)
+        let destinationLocation = MKPlacemark(coordinate: destinationCoordinate)
+        let request = MKDirections.Request()
+        request.source = MKMapItem(placemark: startLocation)
+        request.destination = MKMapItem(placemark: destinationLocation)
+        request.transportType = .walking
+        request.requestsAlternateRoutes = true
+        let direction = MKDirections(request: request)
+        direction.calculate { (responce,error) in
+            if let error = error {
+                print(error)
+                return
+            }
+            guard let responce = responce else {
+                self.alertError(title: "ОШИБКА", mesage: "Маршрут не доступен")
+                return }
+            var minRoute = responce.routes[0]
+            for route in responce.routes {
+                minRoute = (route.distance < minRoute.distance) ? route : minRoute
+            }
+            self.mapView.addOverlay(minRoute.polyline)
+        }
+    }
 }
+
+extension ViewController : MKMapViewDelegate {
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        let renderer = MKPolylineRenderer(overlay: overlay as! MKPolyline)
+        renderer.strokeColor = .red
+        return renderer
+    }
+}
+
 extension ViewController {
     func setConstrains() {
         view.addSubview(mapView)
