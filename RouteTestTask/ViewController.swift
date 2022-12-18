@@ -54,13 +54,20 @@ class ViewController: UIViewController {
             
         }
     }
+    
     @objc func routeButtonTapped() {
-        print("TapRoute")
-        
+        for index in 0...annotationsArray.count - 2 {
+            createDirectionRequest(startCoordinate: annotationsArray[index].coordinate, destinationCoordinate: annotationsArray[index + 1].coordinate)
+        }
+        mapView.showAnnotations(annotationsArray, animated: true)
     }
+    
     @objc func resetButtonTapped() {
-        print("TapReset")
-        
+        mapView.removeOverlays(mapView.overlays)
+        mapView.removeAnnotations(mapView.annotations)
+        annotationsArray = [MKPointAnnotation]()
+        routeButton.isHidden = true
+        resetButton.isHidden = true
     }
     
     private func setupPlacemarkt(addressPlace: String) {
@@ -137,21 +144,21 @@ extension ViewController {
             addAdressButton.topAnchor.constraint(equalTo: mapView.topAnchor, constant: 70),
             addAdressButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -20),
             addAdressButton.heightAnchor.constraint(equalToConstant: 40),
-            addAdressButton.widthAnchor.constraint(equalToConstant: 100)
+            addAdressButton.widthAnchor.constraint(equalToConstant: 110)
             
         ])
         
         mapView.addSubview(routeButton)
         NSLayoutConstraint.activate([
-            routeButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -30),
+            routeButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -60),
             routeButton.leadingAnchor.constraint(equalTo: mapView.leadingAnchor, constant: 20),
-            routeButton.heightAnchor.constraint(equalToConstant: 50),
-            routeButton.widthAnchor.constraint(equalToConstant: 50)
+            routeButton.heightAnchor.constraint(equalToConstant: 55),
+            routeButton.widthAnchor.constraint(equalToConstant: 55)
             
         ])
         mapView.addSubview(resetButton)
         NSLayoutConstraint.activate([
-            resetButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -30),
+            resetButton.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -60),
             resetButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -20),
             resetButton.heightAnchor.constraint(equalToConstant: 50),
             resetButton.widthAnchor.constraint(equalToConstant: 50)
