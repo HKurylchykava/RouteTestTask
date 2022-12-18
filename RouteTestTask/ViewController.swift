@@ -37,6 +37,7 @@ class ViewController: UIViewController {
         return button
     }()
     
+    var annotationsArray = [MKPointAnnotation]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,20 +46,47 @@ class ViewController: UIViewController {
         routeButton.addTarget(self, action: #selector(routeButtonTapped), for: .touchUpInside)
         resetButton.addTarget(self, action: #selector(resetButtonTapped), for: .touchUpInside)
     }
-
+    
     @objc func addAdressButtonTapped() {
-        alertAddAddress(title: "Добавить", placeHolder: "ВВедите адрес") { text in
-            print(text)
+        alertAddAddress(title: "Добавить", placeHolder: "ВВедите адрес") { [self](text) in
+            setupPlacemarkt(addressPlace: text)
+            
         }
         
     }
     @objc func routeButtonTapped() {
         print("TapRoute")
-
+        
     }
     @objc func resetButtonTapped() {
         print("TapReset")
-
+        
+    }
+    
+    private func setupPlacemarkt(addressPlace: String) {
+        let geoCoder = CLGeocoder()
+        geoCoder.geocodeAddressString(addressPlace) { [self](placemarks, error) in
+            if let error = error {
+                print(error)
+                alertError(title: "Ошибка", mesage: "Сервер не доступен. Попробуйте добавиь адрес еще раз.")
+                return
+            }
+            guard let placemarks = placemarks else { return }
+            let placemark = placemarks.first
+            let annotation = MKPointAnnotation()
+            annotation.title = "\(addressPlace)"
+            guard let placemarkLocation = placemark?.location else {
+                return
+            }
+            annotation.coordinate = placemarkLocation.coordinate
+            annotationsArray.append(annotation)
+            
+            if annotationsArray.count > 2 {
+                routeButton.isHidden = false
+                resetButton.isHidden = false
+            }
+            mapView.showAnnotations(annotationsArray, animated: true)
+        }
     }
 }
 extension ViewController {
@@ -76,7 +104,7 @@ extension ViewController {
             addAdressButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -20),
             addAdressButton.heightAnchor.constraint(equalToConstant: 40),
             addAdressButton.widthAnchor.constraint(equalToConstant: 100)
-
+            
         ])
         
         mapView.addSubview(routeButton)
@@ -85,7 +113,7 @@ extension ViewController {
             routeButton.leadingAnchor.constraint(equalTo: mapView.leadingAnchor, constant: 20),
             routeButton.heightAnchor.constraint(equalToConstant: 50),
             routeButton.widthAnchor.constraint(equalToConstant: 50)
-
+            
         ])
         mapView.addSubview(resetButton)
         NSLayoutConstraint.activate([
@@ -93,7 +121,7 @@ extension ViewController {
             resetButton.trailingAnchor.constraint(equalTo: mapView.trailingAnchor, constant: -20),
             resetButton.heightAnchor.constraint(equalToConstant: 50),
             resetButton.widthAnchor.constraint(equalToConstant: 50)
-
+            
         ])
     }
 }
