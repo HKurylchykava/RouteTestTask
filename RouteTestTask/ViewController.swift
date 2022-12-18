@@ -47,7 +47,10 @@ class ViewController: UIViewController {
     }
 
     @objc func addAdressButtonTapped() {
-        print("TapAdd")
+        alertAddAddress(title: "Добавить", placeHolder: "ВВедите адрес") { text in
+            print(text)
+        }
+        
     }
     @objc func routeButtonTapped() {
         print("TapRoute")
